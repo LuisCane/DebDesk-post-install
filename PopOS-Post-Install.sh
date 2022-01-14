@@ -1,10 +1,11 @@
 #!/bin/bash
 
 #Common Setup after installing PopOS.
-#Part 1 - Update & Upgrade software
+#Part 1 - Update & Upgrade software and install vim
 #   apt
 #   firmware
 #   flatpak
+#   install vim
 #Part 2 - Change common settings
 #   Hostname
 #   SSH Keys
@@ -13,7 +14,6 @@
 #Part 3 - Set up Yubikey and PAM
 #Part 4 - Install Software
 #   Apt:
-#       vim
 #       neofetch
 #       code
 #       openssh-server
@@ -74,7 +74,8 @@ Update () {
         read -p $'Would you like to upgrade the software? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) apt-pkg-upgrade; break;;
+            [Yy]* ) apt-pkg-upgrade; break;
+                    sudo apt install vim;;
             [Nn]* ) break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -156,15 +157,36 @@ SSHKeyGen () {
         esac
     done
 }
+#Copy bashrc and vimrc to home folder
+CPbashrcvimrc () {
+    while true; do 
+        read -p 'Would you like to copy the bashrc file included with this script to your home folder? [Y/n]' yn
+        yn=${yn:-Y}
+        case $yn in
+            [Yy]* ) rm ~/.bashrc && cp ./bashrc ~/.bashrc;;
+            [Nn]* ) printf 'OK'
+                    break;;
+                * ) echo 'Please answer yes or no.';;
+        esac
+        read -p 'Would you like to copy the vimrc file included with this script to your home folder? [Y/n]' yn
+        yn=${yn:-Y}
+        case $yn in
+            [Yy]* ) rm ~/.bashrc && cp ./vimrc ~/.vimrc;;
+            [Nn]* ) printf 'OK'
+                    break;;
+                * ) echo 'Please answer yes or no.';;
+        esac
+}
 #Set up Yubikey authentication
 ConfigYubikeys () {
     while true; do
         read -p $'Would you like to set up Yubikey authentication? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) #InstallYubiSW;
+            [Yy]* ) InstallYubiSW;
                     CreateYubikeyOTP;
                     CreateYubikeyChalResp;
+                    CPYubikeyFiles;
                     return 0;;
             [Nn]* ) printf "\nSkipping Yubikey setup";
                     break;;
@@ -214,9 +236,6 @@ CreateYubikeyChalResp () {
     done
     echo -e "\nNow creating Yubikey Challenge Response files.\n"
     sleep 1s
-    echo "sudo mkdir -p /test/var/yubico"
-    echo "sudo chown root:root /test/var/yubico"
-    echo "sudo chmod 777 /test/var/yubico"
     while true; do
         echo "ykpamcfg -2 -v"
         read -p "Would you like to add another yubikey? [Y/n]" yn
@@ -225,12 +244,6 @@ CreateYubikeyChalResp () {
         [Yy]* ) read -rsn1 -p "Please insert your next yubikey and press any key to continue"
                 echo "ykpamcfg -2 -v";;
         [Nn]* ) printf "\nSkipping";
-                for i in ~/.yubico/*; do
-                echo "cp $i $(echo $i | sed "s/challenge/$USER/")"
-                echo "sudo mv ~/.yubico/$USER* /test/var/yubico/"
-                echo "sudo chown root:root /test/var/yubico/*"
-                echo "sudo chmod 666 /test/var/yubico/*"
-                done
                 break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -255,13 +268,33 @@ CreateYubikeyOTP () {
                     authykeys+=':'
                     authykeys+=$ykey12;;
             [Nn]* ) printf "\nSkipping";
-                    echo $authykeys > ./authorized_yubikeys
+                    echo $authykeys > | tee >> ./authorized_yubikeys
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
         echo $authykeys | tee >> ./authorized_yubikeys
         echo "Keys saved to ./authorized_yubikeys."
     done
+}
+#Copy and move Yubikey files to apropriate locations
+CPYubikeyFiles () {
+    echo "sudo mkdir -p /var/yubico"
+    echo "sudo chown root:root /var/yubico"
+    echo "sudo chmod 766 /var/yubico"
+    echo "sudo cp ./authorized_yubikeys /var/yubico/authorized_yubikeys"
+    for i in ~/.yubico/*; do
+        echo "cp $i $(echo $i | sed "s/challenge/$USER/")"
+        echo "sudo mv ~/.yubico/$USER* /test/var/yubico/"
+        echo "sudo chown root:root /test/var/yubico/*"
+        echo "sudo chmod 600 /test/var/yubico/*"
+    done
+    echo "sudo chmod 700 /var/yubico"
+    echo "sudo cp ./pam.d/yubikey /etc/pam.d/yubikey"
+    echo "sudo cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo"
+    echo "sudo cp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin"
+    echo -e "\nAdd 'include' statements to pam auth files to specify your security preferences."
+    sleep 3s
+
 }
 #check process for errors and prompt user to exit script if errors are detected.
 check_exit_status() {
@@ -281,18 +314,28 @@ check_exit_status() {
         fi
     fi
 }
-#if Greeting; then
-#    STR=$'\nProceeding\n'
-#    echo "$STR"
-#else
-#    printf "\nGoodbye\n"; exit
-#fi
-#Update
+if Greeting; then
+    STR=$'\nProceeding\n'
+    echo "$STR"
+else
+    printf "\nGoodbye\n"; exit
+fi
+Update
 
-#ChHostname
+ChHostname
 
-#SSHKeyGen
+SSHKeyGen
 
-ConfigYubikeys
+CPbashrcvimrc
+
+#ConfigYubikeys
+
+#InstallAptSW
+
+#InstallFlatpaks
+
+#InstallSnaps
+
+#InstallOther
 
 printf '\nGoodbye\n'
