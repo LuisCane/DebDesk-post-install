@@ -176,6 +176,7 @@ CPbashrcvimrc () {
                     break;;
                 * ) echo 'Please answer yes or no.';;
         esac
+    done
 }
 #Set up Yubikey authentication
 ConfigYubikeys () {
@@ -268,7 +269,7 @@ CreateYubikeyOTP () {
                     authykeys+=':'
                     authykeys+=$ykey12;;
             [Nn]* ) printf "\nSkipping";
-                    echo $authykeys > | tee >> ./authorized_yubikeys
+                    echo $authykeys | tee >> ./authorized_yubikeys;
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -296,6 +297,24 @@ CPYubikeyFiles () {
     sleep 3s
 
 }
+InstallAptSW () {
+    file="./apps/apt-apps"
+    
+    #while read -r line; do
+    #    echo $line
+    #done < $file
+    #for i in array;do
+    while read -r line; do
+        read -p "Would you like to install $line? [Y/n]" yn
+        yn=${yn:-Y}
+        case $yn in
+            [Yy]* ) echo "sudo apt install -y $line";;
+            [Nn]* ) printf "\nSkipping";
+                    break;;
+                * ) echo 'Please answer yes or no.';;
+        esac
+    done < $file
+}
 #check process for errors and prompt user to exit script if errors are detected.
 check_exit_status() {
     if [ $? -eq 0 ]
@@ -314,23 +333,24 @@ check_exit_status() {
         fi
     fi
 }
-if Greeting; then
-    STR=$'\nProceeding\n'
-    echo "$STR"
-else
-    printf "\nGoodbye\n"; exit
-fi
-Update
+#if Greeting; then
+#    STR=$'\nProceeding\n'
+#    echo "$STR"
+#else
+#    printf "\nGoodbye\n"; exit
+#fi
 
-ChHostname
+#Update
 
-SSHKeyGen
+#ChHostname
 
-CPbashrcvimrc
+#SSHKeyGen
+
+#CPbashrcvimrc
 
 #ConfigYubikeys
 
-#InstallAptSW
+InstallAptSW
 
 #InstallFlatpaks
 
