@@ -19,7 +19,6 @@
 #       openssh-server
 #       Gnome-tweaks
 #       Gparted
-#       snapd
 #       vlc
 #       putty
 #       variety
@@ -75,6 +74,7 @@ Update () {
         yn=${yn:-Y}
         case $yn in
             [Yy]* ) apt-pkg-upgrade; break;
+                    printf '\nInstalling VIM\n'
                     sudo apt install vim;;
             [Nn]* ) break;;
             * ) echo 'Please answer yes or no.';;
@@ -129,7 +129,7 @@ ChHostname () {
                     sudo hostnamectl set-hostname $NEWHOSTNAME
                     return 0;;
             [Nn]* ) echo
-                    echo "Hostname " $HOSTNAME " will not be changed.";
+                    printf '\nHostname %s will not be changed.\n' $HOSTNAME ;
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -151,7 +151,7 @@ SSHKeyGen () {
                     outfile=${outfile:-$HOME/.ssh/$USER\_rsa}
                     ssh-keygen -t $keytype -b $modulus -C "$keycomment" -f $outfile;
                     return 0;;
-            [Nn]* ) printf "\nSSH Key Not generated";
+            [Nn]* ) printf '\nSSH Key Not generated\n';
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -163,16 +163,17 @@ CPbashrcvimrc () {
         read -p 'Would you like to copy the bashrc file included with this script to your home folder? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) cp ./bashrc ~/.bashrc;;
-            [Nn]* ) printf 'OK'
+            [Yy]* ) cp ./home/user/bashrc ~/.bashrc;;
+            [Nn]* ) printf '\nOK\n'
                     break;;
                 * ) echo 'Please answer yes or no.';;
         esac
         read -p 'Would you like to copy the vimrc file included with this script to your home folder? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) cp ./vimrc ~/.vimrc;;
-            [Nn]* ) printf 'OK'
+            [Yy]* ) cp ./home/user/vimrc ~/.vimrc
+                    break;;
+            [Nn]* ) printf '\nOK\n'
                     break;;
                 * ) echo 'Please answer yes or no.';;
         esac
@@ -189,7 +190,7 @@ ConfigYubikeys () {
                     CreateYubikeyChalResp;
                     CPYubikeyFiles;
                     return 0;;
-            [Nn]* ) printf "\nSkipping Yubikey setup";
+            [Nn]* ) printf "\nSkipping Yubikey setup\n";
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -220,13 +221,15 @@ CreateYubikeyChalResp () {
         read -p "Would you like to program challenge reponse keys on your yubikey? [y/N]" yn
         yn=${yn:-n}
         case $yn in
-        [Yy]* ) echo 'ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible';
+        [Yy]* ) echo 'ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible'
+                ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible ;
                 while true; do
                     read -p "Would you like to program challenge reponse keys on another yubikey? [y/N]" yn
                     yn=${yn:-N}
                     case $yn in
                     [Yy]* ) read -rsn1 -p "Please insert your next yubikey and press any key to continue"
-                            echo 'ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible';;
+                            echo 'ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible'
+                            ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible;;
                     [Nn]* ) break;;
                     * ) echo 'Please answer yes or no.';;
                     esac
@@ -239,11 +242,13 @@ CreateYubikeyChalResp () {
     sleep 1s
     while true; do
         echo "ykpamcfg -2 -v"
+        ykpamcfg -2 -v
         read -p "Would you like to add another yubikey? [Y/n]" yn
         yn=${yn:-Y} 
         case $yn in
         [Yy]* ) read -rsn1 -p "Please insert your next yubikey and press any key to continue"
-                echo "ykpamcfg -2 -v";;
+                echo "ykpamcfg -2 -v"
+                ykpamcfg -2 -v;;
         [Nn]* ) printf "\nSkipping";
                 break;;
             * ) echo 'Please answer yes or no.';;
@@ -315,6 +320,7 @@ InstallSW () {
     yn=${yn:-Y}
     case $yn in
         [Yy]* ) InstallAptSW
+                break
                 ;;
         [Nn]* ) printf "\nSkipping\n";
                     break;;
@@ -323,10 +329,11 @@ InstallSW () {
     done
 
     while true; do
-        read -p $'Would you like to install apt packages? [Y/n]' yn
+        read -p $'Would you like to install Flatpaks? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
         [Yy]* ) InstallFlatpaks
+                break
                 ;;
         [Nn]* ) printf "\nSkipping\n";
                     break;;
@@ -341,6 +348,7 @@ InstallSW () {
         [Yy]* ) echo 'sudo apt install snapd\n'
                 sudo apt install snapd
                 InstallSnaps
+                break
                 ;;
         [Nn]* ) printf "\nSkipping\n";
                     break;;
@@ -375,9 +383,11 @@ InstallAptSW() {
     yn=${yn:-Y}
     case $yn in
       [Yy]*) echo sudo apt install -y "$line" 
+            sudo apt install -y "$line"
             check_exit_status
+            break
             ;;
-      [Nn]*) printf '\nSkipping' ;;
+      [Nn]*) printf '\nSkipping\n' ;;
       *) break ;;
     esac
   done 3< "$file"
@@ -393,6 +403,7 @@ InstallFlatpaks () {
     case $yn in
       [Yy]*) echo flatpak install -y "$line"
              check_exit_status
+             break
              ;;
       [Nn]*) printf '\nSkipping' ;;
       *) break ;;
@@ -410,6 +421,7 @@ InstallSnaps () {
     case $yn in
       [Yy]*) echo sudo snap install -y "$line"
              check_exit_status
+             break
              ;;
       [Nn]*) printf '\nSkipping' ;;
       *) break ;;
