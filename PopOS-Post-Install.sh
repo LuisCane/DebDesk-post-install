@@ -420,15 +420,15 @@ InstallFirestorm () {
     file='./apps/firestorm'
     
     printf 'Downloading Firestorm\n'
-    echo 'wget https://downloads.firestormviewer.org/linux/Phoenix_Firestorm-Release_x86_64_6.4.21.64531.tar.xz'
+    wget $file
     printf '\nextracting\n'
-    echo 'tar -xvf Phoenix_Firestorm-Release_x86_64*.tar.xz'
+    tar -xvf Phoenix_Firestorm-Release_x86_64*.tar.xz
     printf '\nChanging the install script to be executable\m'
-    echo 'chmod +x Phoenix_Firestorm*/install.sh'
+    chmod +x Phoenix_Firestorm*/install.sh
     printf 'installing Firestorm'
-    echo './Phoenix_Firestorm*/install.sh'
+    sudo ./Phoenix_Firestorm*/install.sh
     printf '\ncleanup\n'
-    echo 'rm -r ./Phoenix_Firestorm*'
+    rm -r ./Phoenix_Firestorm*
      
 }
 #check process for errors and prompt user to exit script if errors are detected.
