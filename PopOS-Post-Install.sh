@@ -106,7 +106,7 @@ Update () {
 #upgrade Apt Packages
 apt-pkg-upgrade () {
     printf '\nsudo apt -y upgrade\n'
-    sudo apt -y upgrade;
+    sudo apt -y upgrade --allow-downgrades;
     check_exit_status
     printf '\nsudo apt -y dist-upgrade\n'
     sudo apt -y dist-upgrade;
@@ -163,7 +163,7 @@ CPbashrcvimrc () {
         read -p 'Would you like to copy the bashrc file included with this script to your home folder? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) rm ~/.bashrc && cp ./bashrc ~/.bashrc;;
+            [Yy]* ) cp ./bashrc ~/.bashrc;;
             [Nn]* ) printf 'OK'
                     break;;
                 * ) echo 'Please answer yes or no.';;
@@ -171,7 +171,7 @@ CPbashrcvimrc () {
         read -p 'Would you like to copy the vimrc file included with this script to your home folder? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) rm ~/.bashrc && cp ./vimrc ~/.vimrc;;
+            [Yy]* ) cp ./vimrc ~/.vimrc;;
             [Nn]* ) printf 'OK'
                     break;;
                 * ) echo 'Please answer yes or no.';;
@@ -279,41 +279,157 @@ CreateYubikeyOTP () {
 }
 #Copy and move Yubikey files to apropriate locations
 CPYubikeyFiles () {
-    echo "sudo mkdir -p /var/yubico"
-    echo "sudo chown root:root /var/yubico"
-    echo "sudo chmod 766 /var/yubico"
-    echo "sudo cp ./authorized_yubikeys /var/yubico/authorized_yubikeys"
+    printf "sudo mkdir -p /var/yubico\n"
+    sudo mkdir -p /var/yubico
+    printf "sudo chown root:root /var/yubico\n"
+    sudo chown root:root /var/yubico
+    printf "sudo chmod 766 /var/yubico\n"
+    sudo chmod 766 /var/yubico
+    printf "sudo cp ./authorized_yubikeys /var/yubico/authorized_yubikeys\n"
+    sudo cp ./authorized_yubikeys /var/yubico/authorized_yubikeys
     for i in ~/.yubico/*; do
-        echo "cp $i $(echo $i | sed "s/challenge/$USER/")"
-        echo "sudo mv ~/.yubico/$USER* /test/var/yubico/"
-        echo "sudo chown root:root /test/var/yubico/*"
-        echo "sudo chmod 600 /test/var/yubico/*"
+        printf "cp $i $(echo $i | sed "s/challenge/$USER/")\n"
+        cp $i $(echo $i | sed "s/challenge/$USER/")
+        printf "sudo mv ~/.yubico/$USER* /test/var/yubico/\n"
+        sudo mv ~/.yubico/$USER* /test/var/yubico/
+        printf "sudo chown root:root /test/var/yubico/*\n"
+        sudo chown root:root /test/var/yubico/*
+        printf "sudo chmod 600 /test/var/yubico/*\n"
+        sudo chmod 600 /test/var/yubico/*
     done
-    echo "sudo chmod 700 /var/yubico"
-    echo "sudo cp ./pam.d/yubikey /etc/pam.d/yubikey"
-    echo "sudo cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo"
-    echo "sudo cp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin"
-    echo -e "\nAdd 'include' statements to pam auth files to specify your security preferences."
+    printf "sudo chmod 700 /var/yubico"
+    sudo chmod 700 /var/yubico
+    printf "sudo cp ./pam.d/yubikey /etc/pam.d/yubikey"
+    sudo cp ./pam.d/yubikey /etc/pam.d/yubikey
+    printf "sudo cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo"
+    sudo cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo
+    printf "sudo cp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin"
+    sudo cp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin
+    printf "\nAdd 'include' statements to pam auth files to specify your security preferences."
     sleep 3s
 
 }
-InstallAptSW () {
-    file="./apps/apt-apps"
-    
-    #while read -r line; do
-    #    echo $line
-    #done < $file
-    #for i in array;do
-    while read -r line; do
-        read -p "Would you like to install $line? [Y/n]" yn
+InstallSW () {
+    while true; do
+    read -p $'Would you like to install apt packages? [Y/n]' yn
+    yn=${yn:-Y}
+    case $yn in
+        [Yy]* ) InstallAptSW
+                ;;
+        [Nn]* ) printf "\nSkipping\n";
+                    break;;
+            * ) echo 'Please answer yes or no.';;
+        esac
+    done
+
+    while true; do
+        read -p $'Would you like to install apt packages? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) echo "sudo apt install -y $line";;
-            [Nn]* ) printf "\nSkipping";
+        [Yy]* ) InstallFlatpaks
+                ;;
+        [Nn]* ) printf "\nSkipping\n";
                     break;;
-                * ) echo 'Please answer yes or no.';;
+            * ) echo 'Please answer yes or no.';;
         esac
-    done < $file
+    done
+
+    while true; do
+        read -p $'Would you like to install snap packages? [Y/n]' yn
+        yn=${yn:-Y}
+        case $yn in
+        [Yy]* ) echo 'sudo apt install snapd\n'
+                sudo apt install snapd
+                InstallSnaps
+                ;;
+        [Nn]* ) printf "\nSkipping\n";
+                    break;;
+            * ) echo 'Please answer yes or no.';;
+        esac
+    done
+
+    while true; do
+        printf $'Would you like to install Firestorm Viewer? [Y/n]'
+        read -r yn
+        yn=${yn:-Y}
+        case $yn in
+        [Yy]* ) echo 'Installing Firestorm'
+                read -rsn1 -p "Please ensure that the download link in ./apps/firestorm is the latest version. Press any key to continue."
+                InstallFirestorm
+                ;;
+        [Nn]* ) printf "\nSkipping\n";
+                    break;;
+            * ) echo 'Please answer yes or no.';;
+        esac
+    done
+}
+InstallAptSW() {
+    printf 'Installing Apt Packages'
+    sleep 1s
+  file='./apps/apt-apps'
+
+  while read -r line <&3; do
+    printf 'Would you like to install %s [Y/n]? ' "$line"
+
+    read -r yn
+    yn=${yn:-Y}
+    case $yn in
+      [Yy]*) echo sudo apt install -y "$line" 
+            check_exit_status
+            ;;
+      [Nn]*) printf '\nSkipping' ;;
+      *) break ;;
+    esac
+  done 3< "$file"
+}
+InstallFlatpaks () {
+    printf 'Installing Flatpaks'
+  file='./apps/flatpaks'
+
+  while read -r line <&3; do
+    printf 'Would you like to install %s [Y/n]? ' "$line"
+    read -r yn
+    yn=${yn:-Y}
+    case $yn in
+      [Yy]*) echo flatpak install -y "$line"
+             check_exit_status
+             ;;
+      [Nn]*) printf '\nSkipping' ;;
+      *) break ;;
+    esac
+  done 3< "$file"
+}
+InstallSnaps () {
+    printf 'Installing Snaps'
+  file='./apps/snaps'
+
+  while read -r line <&3; do
+    printf 'Would you like to install %s [Y/n]? ' "$line"
+    read -r yn
+    yn=${yn:-Y}
+    case $yn in
+      [Yy]*) echo sudo snap install -y "$line"
+             check_exit_status
+             ;;
+      [Nn]*) printf '\nSkipping' ;;
+      *) break ;;
+    esac
+  done 3< "$file"
+}
+InstallFirestorm () {
+    file='./apps/firestorm'
+    
+    printf 'Downloading Firestorm\n'
+    echo 'wget https://downloads.firestormviewer.org/linux/Phoenix_Firestorm-Release_x86_64_6.4.21.64531.tar.xz'
+    printf '\nextracting\n'
+    echo 'tar -xvf Phoenix_Firestorm-Release_x86_64*.tar.xz'
+    printf '\nChanging the install script to be executable\m'
+    echo 'chmod +x Phoenix_Firestorm*/install.sh'
+    printf 'installing Firestorm'
+    echo './Phoenix_Firestorm*/install.sh'
+    printf '\ncleanup\n'
+    echo 'rm -r ./Phoenix_Firestorm*'
+     
 }
 #check process for errors and prompt user to exit script if errors are detected.
 check_exit_status() {
@@ -333,29 +449,24 @@ check_exit_status() {
         fi
     fi
 }
-#if Greeting; then
-#    STR=$'\nProceeding\n'
-#    echo "$STR"
-#else
-#    printf "\nGoodbye\n"; exit
-#fi
 
-#Update
+if Greeting; then
+    STR=$'\nProceeding\n'
+    echo "$STR"
+else
+    printf "\nGoodbye\n"; exit
+fi
 
-#ChHostname
+Update
 
-#SSHKeyGen
+ChHostname
 
-#CPbashrcvimrc
+SSHKeyGen
 
-#ConfigYubikeys
+CPbashrcvimrc
 
-InstallAptSW
+ConfigYubikeys
 
-#InstallFlatpaks
-
-#InstallSnaps
-
-#InstallOther
+InstallSW
 
 printf '\nGoodbye\n'
