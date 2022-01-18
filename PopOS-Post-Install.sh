@@ -27,7 +27,6 @@
 #       cool-retro-term
 #       tilix
 #       virtviewer
-#       spicevdagent (VMs Only)
 #   Flatpak:
 #       flatseal
 #       onlyoffice
@@ -117,6 +116,34 @@ apt-pkg-upgrade () {
     printf '\nsudo apt -y autoclean\n'
     sudo apt -y autoclean;
     check_exit_status
+}
+#Install Spice tools for VMs
+InstallSpiceVDAgent () {
+    printf '\nIf this is a QEMU/Spice Virtual Machine, installing the Spice Tools is recommended.\nWould you like to install Spice-vdagent? [y/n]'
+    read -r yn
+    case $yn in
+        [Yy]* ) printf '\nInstalling spice-vdagent\n'
+                sudo apt install -y spice-vdagent
+                ;;
+        [Nn]* ) printf '\nSkipping Spice-VDagent\n'
+                ;;
+            * ) printf '\nPlease enter yes or no.\n'
+                ;;
+    esac
+}
+#install Refind for Dualboot systems.
+InstallRefind () {
+    printf '\nIf this is a Dual Boot system, Refind is a nice graphical bootloader.\nWould you like to install rEFInd? [y/n]'
+    read -r yn
+    case $yn in
+        [Yy]* ) printf '\nInstalling rEFInd\n'
+                sudo apt install -y Refind
+                ;;
+        [Nn]* ) printf '\nSkipping rEFIndt\n'
+                ;;
+            * ) printf '\nPlease enter yes or no.\n'
+                ;;
+    esac
 }
 #Change System Hostname
 ChHostname () {
@@ -249,7 +276,7 @@ CreateYubikeyChalResp () {
         [Yy]* ) read -rsn1 -p "Please insert your next yubikey and press any key to continue"
                 echo "ykpamcfg -2 -v"
                 ykpamcfg -2 -v;;
-        [Nn]* ) printf "\nSkipping";
+        [Nn]* ) printf "\nSkipping\n";
                 break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -273,7 +300,7 @@ CreateYubikeyOTP () {
     	            ykey12=${ykey:0:12}
                     authykeys+=':'
                     authykeys+=$ykey12;;
-            [Nn]* ) printf "\nSkipping";
+            [Nn]* ) printf "\nSkipping\n";
                     echo $authykeys | tee >> ./authorized_yubikeys;
                     break;;
             * ) echo 'Please answer yes or no.';;
@@ -322,7 +349,7 @@ InstallSW () {
         [Yy]* ) InstallAptSW
                 break
                 ;;
-        [Nn]* ) printf "\nSkipping\n";
+        [Nn]* ) printf "\nSkipping apt packages\n";
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -335,7 +362,7 @@ InstallSW () {
         [Yy]* ) InstallFlatpaks
                 break
                 ;;
-        [Nn]* ) printf "\nSkipping\n";
+        [Nn]* ) printf "\nSkipping Flatpaks\n";
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -350,7 +377,7 @@ InstallSW () {
                 InstallSnaps
                 break
                 ;;
-        [Nn]* ) printf "\nSkipping\n";
+        [Nn]* ) printf "\nSkipping Snaps\n";
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -364,8 +391,9 @@ InstallSW () {
         [Yy]* ) echo 'Installing Firestorm'
                 read -rsn1 -p "Please ensure that the download link in ./apps/firestorm is the latest version. Press any key to continue."
                 InstallFirestorm
+                break
                 ;;
-        [Nn]* ) printf "\nSkipping\n";
+        [Nn]* ) printf "\nSkipping Firestorm\n";
                     break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -385,9 +413,8 @@ InstallAptSW() {
       [Yy]*) echo sudo apt install -y "$line" 
             sudo apt install -y "$line"
             check_exit_status
-            break
             ;;
-      [Nn]*) printf '\nSkipping\n' ;;
+      [Nn]*) printf '\nSkipping %s\n' "$line";;
       *) break ;;
     esac
   done 3< "$file"
@@ -403,9 +430,8 @@ InstallFlatpaks () {
     case $yn in
       [Yy]*) echo flatpak install -y "$line"
              check_exit_status
-             break
              ;;
-      [Nn]*) printf '\nSkipping' ;;
+      [Nn]*) printf '\nSkipping %s\n' "$line";;
       *) break ;;
     esac
   done 3< "$file"
@@ -421,9 +447,8 @@ InstallSnaps () {
     case $yn in
       [Yy]*) echo sudo snap install -y "$line"
              check_exit_status
-             break
              ;;
-      [Nn]*) printf '\nSkipping' ;;
+      [Nn]*) printf '\nSkipping %s\n' "$line";;
       *) break ;;
     esac
   done 3< "$file"
@@ -470,6 +495,10 @@ else
 fi
 
 Update
+
+InstallSpiceVDAgent
+
+InstallRefind
 
 ChHostname
 
