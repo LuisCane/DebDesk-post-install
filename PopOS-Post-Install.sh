@@ -39,6 +39,33 @@
 #       firestorm viewer
 #Part 5 - Reminder of additional setup   
 
+if Greeting; then
+    STR=$'\nProceeding\n'
+    echo "$STR"
+else
+    printf "\nGoodbye\n"; exit
+fi
+
+Update
+
+InstallVIM
+
+InstallSpiceVDAgent
+
+InstallRefind
+
+ChHostname
+
+SSHKeyGen
+
+CPbashrc
+
+CPvimrc
+
+ConfigYubikeys
+
+InstallSW
+
 Greeting () {
     printf '\nHello!'
     sleep 1s
@@ -72,9 +99,8 @@ Update () {
         read -p $'Would you like to upgrade the software? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) apt-pkg-upgrade; break;
-                    printf '\nInstalling VIM\n'
-                    sudo apt install vim;;
+            [Yy]* ) apt-pkg-upgrade;
+                    check_exit_status;;
             [Nn]* ) break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -116,6 +142,20 @@ apt-pkg-upgrade () {
     printf '\nsudo apt -y autoclean\n'
     sudo apt -y autoclean;
     check_exit_status
+}
+#Install VIM
+InstallVIM () {
+    printf '\nWould you like to install VIM?\n'
+    read -r yn
+    case $yn in
+        [Yy]* ) printf '\nInstalling VIM\n'
+                sudo apt install -y vim
+                ;;
+        [Nn]* ) printf '\nSkipping VIM'
+                ;;
+            * ) printf '\nPlease enter yes or no.\n'
+                ;;
+    esa
 }
 #Install Spice tools for VMs
 InstallSpiceVDAgent () {
@@ -185,7 +225,7 @@ SSHKeyGen () {
     done
 }
 #Copy bashrc and vimrc to home folder
-CPbashrcvimrc () {
+CPbashrc () {
     while true; do 
         read -p 'Would you like to copy the bashrc file included with this script to your home folder? [Y/n]' yn
         yn=${yn:-Y}
@@ -195,7 +235,11 @@ CPbashrcvimrc () {
                     break;;
                 * ) echo 'Please answer yes or no.';;
         esac
-        read -p 'Would you like to copy the vimrc file included with this script to your home folder? [Y/n]' yn
+    done
+}
+CPvimrc ()  {
+    while true; do 
+    read -p 'Would you like to copy the vimrc file included with this script to your home folder? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
             [Yy]* ) cp ./home/user/vimrc ~/.vimrc
@@ -429,6 +473,7 @@ InstallFlatpaks () {
     yn=${yn:-Y}
     case $yn in
       [Yy]*) echo flatpak install -y "$line"
+            flatpak install -y "$line"
              check_exit_status
              ;;
       [Nn]*) printf '\nSkipping %s\n' "$line";;
@@ -446,6 +491,7 @@ InstallSnaps () {
     yn=${yn:-Y}
     case $yn in
       [Yy]*) echo sudo snap install -y "$line"
+            sudo snap install "$line"
              check_exit_status
              ;;
       [Nn]*) printf '\nSkipping %s\n' "$line";;
@@ -455,9 +501,10 @@ InstallSnaps () {
 }
 InstallFirestorm () {
     file='./apps/firestorm'
-    
+    read -r url < "$file"
+
     printf 'Downloading Firestorm\n'
-    wget $file
+    wget "$url"
     printf '\nextracting\n'
     tar -xvf Phoenix_Firestorm-Release_x86_64*.tar.xz
     printf '\nChanging the install script to be executable\m'
@@ -486,28 +533,4 @@ check_exit_status() {
         fi
     fi
 }
-
-if Greeting; then
-    STR=$'\nProceeding\n'
-    echo "$STR"
-else
-    printf "\nGoodbye\n"; exit
-fi
-
-Update
-
-InstallSpiceVDAgent
-
-InstallRefind
-
-ChHostname
-
-SSHKeyGen
-
-CPbashrcvimrc
-
-ConfigYubikeys
-
-InstallSW
-
 printf '\nGoodbye\n'
