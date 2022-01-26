@@ -533,4 +533,32 @@ check_exit_status() {
         fi
     fi
 }
+
+if Greeting; then
+    STR=$'\nProceeding\n'
+    echo "$STR"
+else
+    printf "\nGoodbye\n"; exit
+fi
+
+Update
+
+InstallVIM
+
+InstallSpiceVDAgent
+
+InstallRefind
+
+ChHostname
+
+SSHKeyGen
+
+CPbashrc
+
+CPvimrc
+
+ConfigYubikeys
+
+InstallSW
+
 printf '\nGoodbye\n'
