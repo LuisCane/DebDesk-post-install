@@ -39,32 +39,6 @@
 #       firestorm viewer
 #Part 5 - Reminder of additional setup   
 
-if Greeting; then
-    STR=$'\nProceeding\n'
-    echo "$STR"
-else
-    printf "\nGoodbye\n"; exit
-fi
-
-Update
-
-InstallVIM
-
-InstallSpiceVDAgent
-
-InstallRefind
-
-ChHostname
-
-SSHKeyGen
-
-CPbashrc
-
-CPvimrc
-
-ConfigYubikeys
-
-InstallSW
 
 Greeting () {
     printf '\nHello!'
@@ -100,7 +74,8 @@ Update () {
         yn=${yn:-Y}
         case $yn in
             [Yy]* ) apt-pkg-upgrade;
-                    check_exit_status;;
+                    check_exit_status
+                    break;;
             [Nn]* ) break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -145,14 +120,15 @@ apt-pkg-upgrade () {
 }
 #Install VIM
 InstallVIM () {
-    printf '\nWould you like to install VIM?\n'
+    printf '\nWould you like to install VIM? [y/n]'
     read -r yn
     case $yn in
         [Yy]* ) printf '\nInstalling VIM\n'
                 sudo apt install -y vim
-                ;;
+                check_exit_status;
+                return 0;;
         [Nn]* ) printf '\nSkipping VIM'
-                ;;
+                return 0;;
             * ) printf '\nPlease enter yes or no.\n'
                 ;;
     esac
@@ -164,9 +140,10 @@ InstallSpiceVDAgent () {
     case $yn in
         [Yy]* ) printf '\nInstalling spice-vdagent\n'
                 sudo apt install -y spice-vdagent
-                ;;
+                check_exit_status;
+                return 0;;
         [Nn]* ) printf '\nSkipping Spice-VDagent\n'
-                ;;
+                return 0;;
             * ) printf '\nPlease enter yes or no.\n'
                 ;;
     esac
@@ -178,9 +155,10 @@ InstallRefind () {
     case $yn in
         [Yy]* ) printf '\nInstalling rEFInd\n'
                 sudo apt install -y Refind
-                ;;
+                check_exit_status;
+                return 0;;
         [Nn]* ) printf '\nSkipping rEFIndt\n'
-                ;;
+                return 0;;
             * ) printf '\nPlease enter yes or no.\n'
                 ;;
     esac
@@ -230,7 +208,8 @@ CPbashrc () {
         read -p 'Would you like to copy the bashrc file included with this script to your home folder? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) cp ./home/user/bashrc ~/.bashrc;;
+            [Yy]* ) cp ./home/user/bashrc ~/.bashrc
+                    break;;
             [Nn]* ) printf '\nOK\n'
                     break;;
                 * ) echo 'Please answer yes or no.';;
@@ -444,7 +423,7 @@ InstallSW () {
     done
 }
 InstallAptSW() {
-    printf 'Installing Apt Packages'
+    printf 'Installing Apt Packages\n'
     sleep 1s
   file='./apps/apt-apps'
 
