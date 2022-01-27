@@ -155,7 +155,7 @@ InstallVIM () {
                 ;;
             * ) printf '\nPlease enter yes or no.\n'
                 ;;
-    esa
+    esac
 }
 #Install Spice tools for VMs
 InstallSpiceVDAgent () {
