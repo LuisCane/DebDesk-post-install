@@ -4,7 +4,6 @@
 #Part 1 - Update & Upgrade software and install vim
 #   apt
 #   firmware
-#   flatpak
 #   install vim
 #Part 2 - Change common settings
 #   Hostname
@@ -15,28 +14,7 @@
 #Part 4 - Install Software
 #   Apt:
 #       neofetch
-#       code
 #       openssh-server
-#       Gnome-tweaks
-#       Gparted
-#       vlc
-#       putty
-#       variety
-#       steam
-#       lutris
-#       cool-retro-term
-#       tilix
-#       virtviewer
-#   Flatpak:
-#       flatseal
-#       onlyoffice
-#       masterpdf
-#       krita
-#       pulseeffects
-#   Snap:
-#       snapstore
-#   Other:
-#       firestorm viewer
 #Part 5 - Reminder of additional setup   
 
 if Greeting; then
@@ -106,15 +84,6 @@ Update () {
         esac
     done
     while true; do
-        read -p $'Would you like to update flatpaks? [Y/n]' yn
-        yn=${yn:-Y}
-        case $yn in
-            [Yy]* ) sudo flatpak update; break;;
-            [Nn]* ) break;;
-            * ) echo 'Please answer yes or no.';;
-        esac
-    done
-    while true; do
         read -p $'Would you like to update the firmware? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
@@ -152,34 +121,6 @@ InstallVIM () {
                 sudo apt install -y vim
                 ;;
         [Nn]* ) printf '\nSkipping VIM'
-                ;;
-            * ) printf '\nPlease enter yes or no.\n'
-                ;;
-    esa
-}
-#Install Spice tools for VMs
-InstallSpiceVDAgent () {
-    printf '\nIf this is a QEMU/Spice Virtual Machine, installing the Spice Tools is recommended.\nWould you like to install Spice-vdagent? [y/n]'
-    read -r yn
-    case $yn in
-        [Yy]* ) printf '\nInstalling spice-vdagent\n'
-                sudo apt install -y spice-vdagent
-                ;;
-        [Nn]* ) printf '\nSkipping Spice-VDagent\n'
-                ;;
-            * ) printf '\nPlease enter yes or no.\n'
-                ;;
-    esac
-}
-#install Refind for Dualboot systems.
-InstallRefind () {
-    printf '\nIf this is a Dual Boot system, Refind is a nice graphical bootloader.\nWould you like to install rEFInd? [y/n]'
-    read -r yn
-    case $yn in
-        [Yy]* ) printf '\nInstalling rEFInd\n'
-                sudo apt install -y Refind
-                ;;
-        [Nn]* ) printf '\nSkipping rEFIndt\n'
                 ;;
             * ) printf '\nPlease enter yes or no.\n'
                 ;;
@@ -258,7 +199,6 @@ ConfigYubikeys () {
         case $yn in
             [Yy]* ) InstallYubiSW;
                     CreateYubikeyOTP;
-                    CreateYubikeyChalResp;
                     CPYubikeyFiles;
                     return 0;;
             [Nn]* ) printf "\nSkipping Yubikey setup\n";
@@ -281,51 +221,6 @@ InstallYubiSW () {
     printf '\nsudo apt install -y yubikey-personalization\n'
     sudo apt install -y yubikey-personalization;
     check_exit_status
-}
-#Setup Yubikey Challenge Response Authentication
-CreateYubikeyChalResp () {
-    echo -e "\nSetting up Challenge Response Authentication\n"
-    read -rsn1 -p "Please insert your yubikey and press any key to continue"
-    echo -e '\nWARNING IF YOU HAVE ALREADY PROGRAMED CHALLENGE RESPONSE, THIS STEP WILL OVERWRITE YOUR EXISTING KEY WITH A NEW ONE. SKIP THIS STEP IF YOU DO NOT WANT A NEW KEY!\n'
-    sleep 1s
-    while true; do
-        read -p "Would you like to program challenge reponse keys on your yubikey? [y/N]" yn
-        yn=${yn:-n}
-        case $yn in
-        [Yy]* ) echo 'ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible'
-                ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible ;
-                while true; do
-                    read -p "Would you like to program challenge reponse keys on another yubikey? [y/N]" yn
-                    yn=${yn:-N}
-                    case $yn in
-                    [Yy]* ) read -rsn1 -p "Please insert your next yubikey and press any key to continue"
-                            echo 'ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible'
-                            ykpersonalize -2 -ochal-resp -ochal-hmac -ohmac-lt64 -oserial-api-visible;;
-                    [Nn]* ) break;;
-                    * ) echo 'Please answer yes or no.';;
-                    esac
-                done;;
-        [Nn]* ) break;;
-        * ) echo 'Please answer yes or no.';;
-        esac
-    done
-    echo -e "\nNow creating Yubikey Challenge Response files.\n"
-    sleep 1s
-    while true; do
-        echo "ykpamcfg -2 -v"
-        ykpamcfg -2 -v
-        read -p "Would you like to add another yubikey? [Y/n]" yn
-        yn=${yn:-Y} 
-        case $yn in
-        [Yy]* ) read -rsn1 -p "Please insert your next yubikey and press any key to continue"
-                echo "ykpamcfg -2 -v"
-                ykpamcfg -2 -v;;
-        [Nn]* ) printf "\nSkipping\n";
-                break;;
-            * ) echo 'Please answer yes or no.';;
-        esac
-    done
-    
 }
 #Setup Yubikey OTP Authentication
 CreateYubikeyOTP () {
@@ -399,49 +294,6 @@ InstallSW () {
         esac
     done
 
-    while true; do
-        read -p $'Would you like to install Flatpaks? [Y/n]' yn
-        yn=${yn:-Y}
-        case $yn in
-        [Yy]* ) InstallFlatpaks
-                break
-                ;;
-        [Nn]* ) printf "\nSkipping Flatpaks\n";
-                    break;;
-            * ) echo 'Please answer yes or no.';;
-        esac
-    done
-
-    while true; do
-        read -p $'Would you like to install snap packages? [Y/n]' yn
-        yn=${yn:-Y}
-        case $yn in
-        [Yy]* ) echo 'sudo apt install snapd\n'
-                sudo apt install snapd
-                InstallSnaps
-                break
-                ;;
-        [Nn]* ) printf "\nSkipping Snaps\n";
-                    break;;
-            * ) echo 'Please answer yes or no.';;
-        esac
-    done
-
-    while true; do
-        printf $'Would you like to install Firestorm Viewer? [Y/n]'
-        read -r yn
-        yn=${yn:-Y}
-        case $yn in
-        [Yy]* ) echo 'Installing Firestorm'
-                read -rsn1 -p "Please ensure that the download link in ./apps/firestorm is the latest version. Press any key to continue."
-                InstallFirestorm
-                break
-                ;;
-        [Nn]* ) printf "\nSkipping Firestorm\n";
-                    break;;
-            * ) echo 'Please answer yes or no.';;
-        esac
-    done
 }
 InstallAptSW() {
     printf 'Installing Apt Packages'
@@ -462,58 +314,6 @@ InstallAptSW() {
       *) break ;;
     esac
   done 3< "$file"
-}
-InstallFlatpaks () {
-    printf 'Installing Flatpaks'
-  file='./apps/flatpaks'
-
-  while read -r line <&3; do
-    printf 'Would you like to install %s [Y/n]? ' "$line"
-    read -r yn
-    yn=${yn:-Y}
-    case $yn in
-      [Yy]*) echo flatpak install -y "$line"
-            flatpak install -y "$line"
-             check_exit_status
-             ;;
-      [Nn]*) printf '\nSkipping %s\n' "$line";;
-      *) break ;;
-    esac
-  done 3< "$file"
-}
-InstallSnaps () {
-    printf 'Installing Snaps'
-  file='./apps/snaps'
-
-  while read -r line <&3; do
-    printf 'Would you like to install %s [Y/n]? ' "$line"
-    read -r yn
-    yn=${yn:-Y}
-    case $yn in
-      [Yy]*) echo sudo snap install -y "$line"
-            sudo snap install "$line"
-             check_exit_status
-             ;;
-      [Nn]*) printf '\nSkipping %s\n' "$line";;
-      *) break ;;
-    esac
-  done 3< "$file"
-}
-InstallFirestorm () {
-    file='./apps/firestorm'
-    read -r url < "$file"
-
-    printf 'Downloading Firestorm\n'
-    wget "$url"
-    printf '\nextracting\n'
-    tar -xvf Phoenix_Firestorm-Release_x86_64*.tar.xz
-    printf '\nChanging the install script to be executable\m'
-    chmod +x Phoenix_Firestorm*/install.sh
-    printf 'installing Firestorm'
-    sudo ./Phoenix_Firestorm*/install.sh
-    printf '\ncleanup\n'
-    rm -r ./Phoenix_Firestorm*
-     
 }
 #check process for errors and prompt user to exit script if errors are detected.
 check_exit_status() {
@@ -545,9 +345,6 @@ Update
 
 InstallVIM
 
-InstallSpiceVDAgent
-
-InstallRefind
 
 ChHostname
 
