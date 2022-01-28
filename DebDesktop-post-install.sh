@@ -1,11 +1,12 @@
 #!/bin/bash
 
-#Common Setup after installing PopOS.
+#Common Setup after installing Debian Based Desktop OS.
 #Part 1 - Update & Upgrade software and install vim
 #   apt
 #   firmware
 #   flatpak
 #   install vim
+#   install sudo
 #Part 2 - Change common settings
 #   Hostname
 #   SSH Keys
@@ -46,7 +47,7 @@ Greeting () {
     printf '\nWelcome to my post installation script for Pop!_OS'
     sleep 1s
     printf '\nIt is not recommended that you run scripts that you find on the internet without knowing exactly what they do.\n\n
-This script contains functions that require root privilages.\n'
+This script contains functions that require root privilages and is intended to run as root or with sudo. Running this script without root privilage will result in errors.\n'
     sleep 3s
     while true; do
         read -p $'Do you wish to proceed? [y/N]' yn
@@ -64,7 +65,7 @@ Update () {
         read -p $'Would you like to update the repositories? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) sudo apt update; check_exit_status; break;;
+            [Yy]* ) apt update; check_exit_status; break;;
             [Nn]* ) break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -84,7 +85,7 @@ Update () {
         read -p $'Would you like to update flatpaks? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) sudo flatpak update; break;;
+            [Yy]* ) flatpak update; break;;
             [Nn]* ) break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -93,9 +94,9 @@ Update () {
         read -p $'Would you like to update the firmware? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) sudo fwupdmgr get-devices;
+            [Yy]* ) fwupdmgr get-devices;
                     check_exit_status;
-                    sudo fwupdmgr get-updates;
+                    fwupdmgr get-updates;
                     check_exit_status;
                     return 0;;
             [Nn]* ) break;;
@@ -105,18 +106,33 @@ Update () {
 }
 #upgrade Apt Packages
 apt-pkg-upgrade () {
-    printf '\nsudo apt -y upgrade\n'
-    sudo apt -y upgrade --allow-downgrades;
+    printf '\napt -y upgrade\n'
+    apt -y upgrade --allow-downgrades;
     check_exit_status
-    printf '\nsudo apt -y dist-upgrade\n'
-    sudo apt -y dist-upgrade;
+    printf '\napt -y dist-upgrade\n'
+    apt -y dist-upgrade;
     check_exit_status
-    printf '\nsudo apt -y autoremove\n'
-    sudo apt -y autoremove;
+    printf '\napt -y autoremove\n'
+    apt -y autoremove;
     check_exit_status
-    printf '\nsudo apt -y autoclean\n'
-    sudo apt -y autoclean;
+    printf '\napt -y autoclean\n'
+    apt -y autoclean;
     check_exit_status
+}
+#Install Sudo
+InstallSudo () {
+    printf '\nWould you like to install sudo [y/n]'
+    read -r yn
+    case $yn in
+        [Yy]* ) printf '\nInstalling sudo\n'
+                apt install -y sudo
+                check_exit_status;
+                return 0;;
+        [Nn]* ) printf '\nSkipping sudo'
+                return 0;;
+            * ) printf '\nPlease enter yes or no.\n'
+                ;;
+    esac
 }
 #Install VIM
 InstallVIM () {
@@ -124,7 +140,7 @@ InstallVIM () {
     read -r yn
     case $yn in
         [Yy]* ) printf '\nInstalling VIM\n'
-                sudo apt install -y vim
+                apt install -y vim
                 check_exit_status;
                 return 0;;
         [Nn]* ) printf '\nSkipping VIM'
@@ -139,7 +155,7 @@ InstallSpiceVDAgent () {
     read -r yn
     case $yn in
         [Yy]* ) printf '\nInstalling spice-vdagent\n'
-                sudo apt install -y spice-vdagent
+                apt install -y spice-vdagent
                 check_exit_status;
                 return 0;;
         [Nn]* ) printf '\nSkipping Spice-VDagent\n'
@@ -171,7 +187,7 @@ ChHostname () {
         yn=${yn:-N}
         case $yn in
             [Yy]* ) read -p "Please enter a new Hostname: " NEWHOSTNAME;
-                    sudo hostnamectl set-hostname $NEWHOSTNAME
+                    hostnamectl set-hostname $NEWHOSTNAME
                     return 0;;
             [Nn]* ) echo
                     printf '\nHostname %s will not be changed.\n' $HOSTNAME ;
@@ -248,17 +264,17 @@ ConfigYubikeys () {
 }
 #Install Yubico Software
 InstallYubiSW () {
-    printf '\nsudo apt install -y libpam-yubico\n'
-    sudo apt install -y libpam-yubico;
+    printf '\napt install -y libpam-yubico\n'
+    apt install -y libpam-yubico;
     check_exit_status
-    printf '\nsudo apt install -y libpam-u2f\n'
-    sudo apt install -y libpam-u2f;
+    printf '\napt install -y libpam-u2f\n'
+    apt install -y libpam-u2f;
     check_exit_status
-    printf '\nsudo apt install -y yubikey-manager\n'
-    sudo apt install -y yubikey-manager;
+    printf '\napt install -y yubikey-manager\n'
+    apt install -y yubikey-manager;
     check_exit_status
-    printf '\nsudo apt install -y yubikey-personalization\n'
-    sudo apt install -y yubikey-personalization;
+    printf '\napt install -y yubikey-personalization\n'
+    apt install -y yubikey-personalization;
     check_exit_status
 }
 #Setup Yubikey Challenge Response Authentication
@@ -334,32 +350,32 @@ CreateYubikeyOTP () {
 }
 #Copy and move Yubikey files to apropriate locations
 CPYubikeyFiles () {
-    printf "sudo mkdir -p /var/yubico\n"
-    sudo mkdir -p /var/yubico
-    printf "sudo chown root:root /var/yubico\n"
-    sudo chown root:root /var/yubico
-    printf "sudo chmod 766 /var/yubico\n"
-    sudo chmod 766 /var/yubico
-    printf "sudo cp ./authorized_yubikeys /var/yubico/authorized_yubikeys\n"
-    sudo cp ./authorized_yubikeys /var/yubico/authorized_yubikeys
+    printf "mkdir -p /var/yubico\n"
+    mkdir -p /var/yubico
+    printf "chown root:root /var/yubico\n"
+    chown root:root /var/yubico
+    printf "chmod 766 /var/yubico\n"
+    chmod 766 /var/yubico
+    printf "cp ./authorized_yubikeys /var/yubico/authorized_yubikeys\n"
+    cp ./authorized_yubikeys /var/yubico/authorized_yubikeys
     for i in ~/.yubico/*; do
         printf "cp $i $(echo $i | sed "s/challenge/$USER/")\n"
         cp $i $(echo $i | sed "s/challenge/$USER/")
-        printf "sudo mv ~/.yubico/$USER* /test/var/yubico/\n"
-        sudo mv ~/.yubico/$USER* /test/var/yubico/
-        printf "sudo chown root:root /test/var/yubico/*\n"
-        sudo chown root:root /test/var/yubico/*
-        printf "sudo chmod 600 /test/var/yubico/*\n"
-        sudo chmod 600 /test/var/yubico/*
+        printf "mv ~/.yubico/$USER* /test/var/yubico/\n"
+        mv ~/.yubico/$USER* /test/var/yubico/
+        printf "chown root:root /test/var/yubico/*\n"
+        chown root:root /test/var/yubico/*
+        printf "chmod 600 /test/var/yubico/*\n"
+        chmod 600 /test/var/yubico/*
     done
-    printf "sudo chmod 700 /var/yubico"
-    sudo chmod 700 /var/yubico
-    printf "sudo cp ./pam.d/yubikey /etc/pam.d/yubikey"
-    sudo cp ./pam.d/yubikey /etc/pam.d/yubikey
-    printf "sudo cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo"
-    sudo cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo
-    printf "sudo cp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin"
-    sudo cp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin
+    printf "chmod 700 /var/yubico"
+    chmod 700 /var/yubico
+    printf "cp ./pam.d/yubikey /etc/pam.d/yubikey"
+    cp ./pam.d/yubikey /etc/pam.d/yubikey
+    printf "cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo"
+    cp ./pam.d/yubikey-sudo /etc/pam.d/yubikey-sudo
+    printf "cp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin"
+    scp ./pam.d/yubikey-pin /etc/pam.d/yubikey-pin
     printf "\nAdd 'include' statements to pam auth files to specify your security preferences."
     sleep 3s
 
@@ -395,8 +411,8 @@ InstallSW () {
         read -p $'Would you like to install snap packages? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-        [Yy]* ) echo 'sudo apt install snapd\n'
-                sudo apt install snapd
+        [Yy]* ) echo 'apt install snapd\n'
+                apt install snapd
                 InstallSnaps
                 break
                 ;;
@@ -433,8 +449,8 @@ InstallAptSW() {
     read -r yn
     yn=${yn:-Y}
     case $yn in
-      [Yy]*) echo sudo apt install -y "$line" 
-            sudo apt install -y "$line"
+      [Yy]*) echo apt install -y "$line" 
+            apt install -y "$line"
             check_exit_status
             ;;
       [Nn]*) printf '\nSkipping %s\n' "$line";;
@@ -469,8 +485,8 @@ InstallSnaps () {
     read -r yn
     yn=${yn:-Y}
     case $yn in
-      [Yy]*) echo sudo snap install -y "$line"
-            sudo snap install "$line"
+      [Yy]*) echo snap install -y "$line"
+            snap install "$line"
              check_exit_status
              ;;
       [Nn]*) printf '\nSkipping %s\n' "$line";;
@@ -489,7 +505,7 @@ InstallFirestorm () {
     printf '\nChanging the install script to be executable\m'
     chmod +x Phoenix_Firestorm*/install.sh
     printf 'installing Firestorm'
-    sudo ./Phoenix_Firestorm*/install.sh
+    ./Phoenix_Firestorm*/install.sh
     printf '\ncleanup\n'
     rm -r ./Phoenix_Firestorm*
      
@@ -521,6 +537,8 @@ else
 fi
 
 Update
+
+InstallSudo
 
 InstallVIM
 
