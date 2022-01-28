@@ -1,5 +1,3 @@
-<<<<<<< HEAD
 auth    sufficient      pam_yubico.so mode=challenge-response chalresp_path=/var/yubico
-=======
->>>>>>> 2c6a0b583f43c2ff8c3a61f50ec412510a50ced4
+
 auth    sufficient      pam_yubico.so id=1 authfile=/var/yubico/authorized_yubikeys
