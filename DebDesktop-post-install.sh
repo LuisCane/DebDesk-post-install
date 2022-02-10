@@ -398,7 +398,8 @@ InstallSW () {
         read -p $'Would you like to install Flatpaks? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-        [Yy]* ) InstallFlatpaks
+        [Yy]* ) apt install flatpak
+                InstallFlatpaks
                 break
                 ;;
         [Nn]* ) printf "\nSkipping Flatpaks\n";
