@@ -1,0 +1,39 @@
+#Common Setup after installing Debian Based Desktop OS.
+#Part 1 - Update & Upgrade software and install vim
+#   apt
+#   firmware
+#   flatpak
+#   install vim
+#   install sudo
+#Part 2 - Change common settings
+#   Hostname
+#   SSH Keys
+#   edit .bashrc
+#   
+#Part 3 - Set up Yubikey and PAM
+#Part 4 - Install Software
+#   Apt:
+#       neofetch
+#       code
+#       openssh-server
+#       Gnome-tweaks
+#       Gparted
+#       vlc
+#       putty
+#       variety
+#       steam
+#       lutris
+#       cool-retro-term
+#       tilix
+#       virtviewer
+#   Flatpak:
+#       flatseal
+#       onlyoffice
+#       masterpdf
+#       krita
+#       pulseeffects
+#   Snap:
+#       snapstore
+#   Other:
+#       firestorm viewer
+#Part 5 - Reminder of additional setup   
