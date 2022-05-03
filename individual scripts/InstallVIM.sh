@@ -4,7 +4,7 @@ InstallVIM () {
     read -r yn
     case $yn in
         [Yy]* ) printf '\nInstalling VIM\n'
-                apt install -y vim
+                sudo apt install -y vim
                 check_exit_status;
                 return 0;;
         [Nn]* ) printf '\nSkipping VIM'

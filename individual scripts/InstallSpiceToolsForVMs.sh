@@ -4,7 +4,7 @@ InstallSpiceVDAgent () {
     read -r yn
     case $yn in
         [Yy]* ) printf '\nInstalling spice-vdagent\n'
-                apt install -y spice-vdagent
+                sudo apt install -y spice-vdagent
                 check_exit_status;
                 return 0;;
         [Nn]* ) printf '\nSkipping Spice-VDagent\n'

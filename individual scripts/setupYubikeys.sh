@@ -18,16 +18,16 @@ ConfigYubikeys () {
 #Install Yubico Software
 InstallYubiSW () {
     printf '\napt install -y libpam-yubico\n'
-    apt install -y libpam-yubico;
+    sudo apt install -y libpam-yubico;
     check_exit_status
     printf '\napt install -y libpam-u2f\n'
-    apt install -y libpam-u2f;
+    sudo apt install -y libpam-u2f;
     check_exit_status
     printf '\napt install -y yubikey-manager\n'
-    apt install -y yubikey-manager;
+    sudo apt install -y yubikey-manager;
     check_exit_status
     printf '\napt install -y yubikey-personalization\n'
-    apt install -y yubikey-personalization;
+    sudo apt install -y yubikey-personalization;
     check_exit_status
 }
 #Setup Yubikey Challenge Response Authentication

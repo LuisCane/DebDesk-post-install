@@ -6,7 +6,7 @@ ChHostname () {
         yn=${yn:-N}
         case $yn in
             [Yy]* ) read -p "Please enter a new Hostname: " NEWHOSTNAME;
-                    hostnamectl set-hostname $NEWHOSTNAME
+                    sudo hostnamectl set-hostname $NEWHOSTNAME
                     return 0;;
             [Nn]* ) echo
                     printf '\nHostname %s will not be changed.\n' $HOSTNAME ;

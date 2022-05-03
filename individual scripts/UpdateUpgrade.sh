@@ -4,7 +4,7 @@ Update () {
         read -p $'Would you like to update the repositories? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) apt update; check_exit_status; break;;
+            [Yy]* ) sudo apt update; check_exit_status; break;;
             [Nn]* ) break;;
             * ) echo 'Please answer yes or no.';;
         esac
@@ -33,9 +33,9 @@ Update () {
         read -p $'Would you like to update the firmware? [Y/n]' yn
         yn=${yn:-Y}
         case $yn in
-            [Yy]* ) fwupdmgr get-devices;
+            [Yy]* ) sudo fwupdmgr get-devices;
                     check_exit_status;
-                    fwupdmgr get-updates;
+                    sudo fwupdmgr get-updates;
                     check_exit_status;
                     return 0;;
             [Nn]* ) break;;
@@ -46,15 +46,15 @@ Update () {
 #upgrade Apt Packages
 apt-pkg-upgrade () {
     printf '\napt -y upgrade\n'
-    apt -y upgrade --allow-downgrades;
+    sudo apt -y upgrade --allow-downgrades;
     check_exit_status
     printf '\napt -y dist-upgrade\n'
-    apt -y dist-upgrade;
+    sudo apt -y dist-upgrade;
     check_exit_status
     printf '\napt -y autoremove\n'
-    apt -y autoremove;
+    sudo apt -y autoremove;
     check_exit_status
     printf '\napt -y autoclean\n'
-    apt -y autoclean;
+    sudo apt -y autoclean;
     check_exit_status
 }
