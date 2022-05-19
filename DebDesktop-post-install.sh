@@ -44,7 +44,7 @@
 Greeting () {
     printf '\nHello!'
     sleep 1s
-    printf '\nWelcome to my post installation script for Pop!_OS'
+    printf '\nWelcome to my post installation script for Pop!_OS and other Debian based distros.'
     sleep 1s
     printf '\nIt is not recommended that you run scripts that you find on the internet without knowing exactly what they do.\n\n
 This script contains functions that require root privilages and is intended to run as root or with sudo. Running this script without root privilage will result in errors.\n'
