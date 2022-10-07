@@ -1,4 +1,6 @@
 # DebDesk-post-install
+Cat: General
+
 Script to perform common tasks after installation of Debian Based Desktops
 
 The script will perform the following tasks:
